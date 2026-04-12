@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<div id="overlay" style="display:none;">
+    <div id="ai-spinner">
+        <div class="spinner"></div>
+        <div>AI is thinking...</div>
+    </div>
+</div>
+<div id="toast-container"></div>
+<div id="logout-container">
+    <button onclick="logout();" id="logout-btn">>>>Logout</button>
+</div>
+<head>
+    <title id="page-title">AI Task Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1 id="page-header">AI Task Manager</h1>
+
+    <!-- LOGIN -->
+    <div id="login-section">
+        <h2>Login</h2>
+        <input id="username" placeholder="Username">
+        <input id="password" type="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <button onclick="register()">Register</button>
+        </br>
+        <small id="password-info">
+            Password must be at least 8 characters and include:</br>
+            - Uppercase letter</br>
+            - Lowercase letter</br>
+            - Number</br>
+        </small>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app-section" style="display:none;">
+
+        <button id="task-form-button" onclick="toggleTaskForm()">➕ Create Task  ⬇</button>
+
+        <!-- TASK FORM -->
+        <div id="task-form" style="display:none;">
+            <input id="title" placeholder="Title">
+            <input id="description" placeholder="Description">
+            <button onclick="createTask()">Create</button>
+        </div>
+
+        <!-- TASK LIST -->
+        <div id="tasks"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
