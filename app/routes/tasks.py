@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from .. import models, schemas, database
 from ..auth import get_current_user
 from ..ai import ai_generate
@@ -29,10 +30,9 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db), current
     :param current_user:
     :return: dictionary containing task information
     """
-    max_position = db.query(func.max(models.Task.position)) \
-        .filter(models.Task.owner_id == current_user.id) \
-        .order_by(models.Task.position.desc()) \
-        .first()
+    max_position = db.query(func.max(models.Task.position))\
+        .filter(models.Task.owner_id == current_user.id)\
+        .scalar()
 
     new_position = (max_position + 1) if max_position is not None else 0
 

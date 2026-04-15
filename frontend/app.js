@@ -238,6 +238,8 @@ async function loadTasks() {
     //Uses SortableJS to let the user drag and drop tasks to re-order
     const sort_container = document.getElementById("tasks");
 
+    let originalOrder = [];
+
     new Sortable(sort_container, {
         animation: 200,
         easing: "cubic-bezier(0.22, 1, 0.36, 1)",
@@ -247,11 +249,25 @@ async function loadTasks() {
 
         handle: ".drag-handle",
 
-        onEnd: function (evt) {
-            const taskIds = [...document.querySelectorAll(".task-card")]
-                .map(el => el.dataset.id);
+        onStart: function () {
+            originalOrder = [...container.querySelectorAll(".task-card")]
+            .map(el => el.dataset.id);
+        },
 
-            saveTaskOrder(taskIds);
+        onEnd: function (evt) {
+            const newOrder = [...container.querySelectorAll(".task-card")]
+            .map(el => el.dataset.id);
+
+        const changed = originalOrder.length !== newOrder.length ||
+            originalOrder.some((id, index) => id !== newOrder[index]);
+
+        if (!changed) {
+            console.log("Order unchanged, skipping API call");
+            return;
+        }
+
+        saveTaskOrder(newOrder);
+        showToast("Task order updated", "success");
         }
     });
     showToast("Tasks successfully reloaded!", "success")
