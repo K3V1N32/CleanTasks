@@ -1,3 +1,4 @@
+/* Main Body Attributes */
 body {
     background: #2D3A3A;
     color: #FCFFFC;
@@ -7,98 +8,19 @@ body {
     padding: 20px;
 }
 
-#loading {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background: #222;
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
-}
-
+/* Input Customization */
 input {
     field-sizing: content;
     min-width: 30%;
+    display: block;
+    margin-bottom: 5px;
 }
 
 #login-section, #task-form {
     margin-bottom: 20px;
 }
 
-.task-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.toggle-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    color: #FCFFFC;
-}
-
-.task-card {
-    background: #0A392A;
-    color: #FCFFFC;
-    border: 1px solid #2BA84A;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 10px;
-    opacity: 0;
-    transform: translateY(10px);
-    animation: fadeIn 0.4s ease forwards;
-}
-
-@keyframes fadeIn {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.task-card:hover {
-    box-shadow: 0 2px 8px #040F0F;
-}
-
-.task-title {
-    font-weight: bold;
-    font-size: 18px;
-}
-
-.task-actions button {
-    margin-top: 10px;
-    margin-right: 5px;
-    margin-bottom: 10px;
-}
-
-.ai-container {
-    display: grid;
-    grid-template-columns: auto auto auto;
-    padding: 5px;
-    animation: fadeIn 0.4s ease;
-}
-
-.ai-container div {
-    color: #00241B;
-    background: #50D99C;
-    border: 1px solid #2D3A3A;
-    border-radius: 10px;
-    padding: 15px;
-}
-
-#task-form-button {
-    margin-top: 5px;
-    margin-bottom: 5px;
-}
-
-input {
-    display: block;
-    margin-bottom: 5px;
-}
-
+/* Logout Button */
 #logout-container {
     position: fixed;
     bottom: 5px;
@@ -123,6 +45,27 @@ input {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* Delete Account Button */
+#delete-container {
+    position: fixed;
+    bottom: 5px;
+    right: 205px;
+    z-index: 1000;
+}
+
+#delete-btn {
+    display: none;
+    padding: 1px 1px;
+    margin-bottom: 2px;
+    margin-right: 2px;
+    border-radius: 8px;
+    color: #00241B;
+    font-size: 18px;
+    min-width: 200px;
+    background: #f44336;
+}
+
+/* Toast Notifications */
 #toast-container {
     position: fixed;
     top: 20px;
@@ -159,6 +102,7 @@ input {
     background: #333;
 }
 
+/* AI Loading Spinner */
 #overlay {
     position: fixed;
     top: 0;
@@ -212,12 +156,40 @@ input {
     to { transform: rotate(360deg); }
 }
 
+/* Password Input */
 #password-info {
     display: none;
 }
 
 #password:focus ~ #password-info {
     display: block;
+}
+
+/* Button Customization */
+button {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button.hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+button.active {
+    transform: scale(0.95);
+}
+
+/* Sortable Drag item */
+.drag-handle {
+    cursor: grab;
+    margin-right: 10px;
+    font-size: 18px;
+    color: #FCFFFC;
+    user-select: none;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
 }
 
 .drag-ghost {
@@ -236,37 +208,157 @@ input {
     background: #00241B;
 }
 
+/* Checkbox Customization */
+input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: #fff;
+    margin: 0;
+    font: inherit;
+    color: currentColor;
+    width: 1.15em;
+    height: 1.15em;
+    border: 0.15em solid currentColor;
+    border-radius: 0.15em;
+    transform: translateY(-0.075em);
+    display: grid;
+    place-content: center;
+}
+
+input[type="checkbox"]::before {
+    content: "";
+    width: 0.65em;
+    height: 0.65em;
+    transform: scale(0);
+    transition: 120ms transform ease-in-out;
+    box-shadow: inset 1em 1em #00241B;
+}
+
+input[type="checkbox"]:checked::before {
+    transform: scale(1);
+}
+
+.form-control + .form-control {
+    margin-top: 1em;
+}
+
+/* Task Cards */
+.task-header {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.left-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.center-group {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 50%;
+    text-align: center;
+    white-space: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    padding: 4px 12px;
+}
+
+.center-group::-webkit-scrollbar {
+    height: 4px;
+    opacity: 0;
+}
+
+.center-group:hover::-webkit-scrollbar {
+    opacity: 1;
+}
+
+.right-group {
+    margin-left: auto;
+}
+
+.task-title {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.task-card {
+    background: #0A392A;
+    color: #FCFFFC;
+    border: 1px solid #2BA84A;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #FCFFFC;
+}
+
+.task-card:hover {
+    box-shadow: 0 2px 8px #040F0F;
+}
+
+.task-actions button {
+    margin-top: 10px;
+    margin-right: 5px;
+    margin-bottom: 10px;
+}
+
+.ai-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    padding: 5px;
+    animation: fadeIn 0.4s ease;
+}
+
+.ai-container div {
+    color: #00241B;
+    background: #50D99C;
+    border: 1px solid #2D3A3A;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+#task-form-button {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
 .task-content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.4s ease;
+    transition: max-height 0.3s ease;
 }
 
 .task-content.open {
     max-height: 500px;
 }
 
-button {
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+.task-card.completed {
+    opacity: 0.8;
 }
 
-button.hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-}
-
-button.active {
-    transform: scale(0.95);
-}
-
-.drag-handle {
-    cursor: grab;
-    margin-right: 10px;
-    font-size: 18px;
-    color: #FCFFFC;
-    user-select: none;
-}
-
-.drag-handle:active {
-    cursor: grabbing;
+.task-card.completed .task-title {
+    text-decoration: line-through;
+    color: #777;
 }

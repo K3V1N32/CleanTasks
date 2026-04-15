@@ -111,6 +111,23 @@ def update_task(task_id: int, task: schemas.TaskCreate, db: Session = Depends(ge
     db.commit()
     return db_task
 
+# ---=== TOGGLE TASK ===---
+@router.put("/tasks/{task_id}/toggle")
+def toggle_task(task_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+
+    task = db.query(models.Task).filter(
+        models.Task.id == task_id,
+        models.Task.owner_id == current_user.id
+    ).first()
+
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    task.completed = not task.completed
+
+    db.commit()
+    return {"completed": task.completed}
+
 # ---=== GENERATE AI INTO DATABASE===---
 @router.post("/tasks/{task_id}/generate-ai")
 def generate_ai(task_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):

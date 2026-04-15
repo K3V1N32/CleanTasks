@@ -68,3 +68,24 @@ def get_current_user_info(current_user = Depends(get_current_user)):
         "id": current_user.id,
         "username": current_user.username,
     }
+
+# ---=== DELETE USER ===---
+@router.delete("/users/me")
+def delete_account(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    """
+    DELETE /users/me
+    Deletes the current user and all associated tasks
+    """
+
+    user = db.query(models.User).filter(
+        models.User.id == current_user.id
+    ).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Delete user - tasks will cascade delete
+    db.delete(user)
+    db.commit()
+
+    return {"message": "Account deleted successfully"}

@@ -168,7 +168,12 @@ async function loadTasks() {
         const div = document.createElement("div");
         div.className = "task-card";
         div.style.animationDelay = `${index * 0.05}s`;
+        div.id = `task-${task.id}`;
         div.dataset.id = task.id;
+
+        if (task.completed) {
+            div.classList.add("completed");
+        }
 
         const generate_btn = !task.ai_generated ? `
              <button onclick="generateAI(${task.id})">🤔Generate AI Summary</button>
@@ -190,14 +195,27 @@ async function loadTasks() {
             </div>
         ` : "";
 
+        const completedCheckbox = `
+            <input title="Task Completed?" class="task-check" type="checkbox"
+                ${task.completed ? "checked" : ""}
+                onclick="event.stopPropagation(); toggleComplete(${task.id})">
+        `;
+
         div.innerHTML = `
             <div onclick="toggleTask(${task.id})" class="task-header">
-                <span class="drag-handle">≡</span>
+                <div class="left-group">
+                    ${completedCheckbox}
+                    <span class="drag-handle">≡</span>
+                </div>
 
-                <div class="task-title">${task.title}</div>
-                <button class="toggle-btn" onclick="event.stopPropagation();toggleTask(${task.id});" id="toggle-${task.id}">
-                    ⬇
-                </button>
+                <div class="center-group">
+                    <div class="task-title">${task.title}</div>
+                </div>
+                <div class="right-group">
+                    <button class="toggle-btn" onclick="event.stopPropagation();toggleTask(${task.id});" id="toggle-${task.id}">
+                        ⬇
+                    </button>
+                </div>
             </div>
 
             <div id="content-${task.id}" class="task-content">
@@ -343,6 +361,45 @@ async function confirmDelete(id) {
     loadTasks();
 }
 
+// ---=== DELETE ACCOUNT ===---
+async function deleteAccount() {
+    if (!confirm("Are you sure you want to delete your account? This cannot be undone!")) return;
+
+    await fetch("http://127.0.0.1:8000/users/me", {
+        method: "DELETE",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+
+    showToast("User account and all user tasks successfully deleted.", "success")
+    // log out user
+    logout();
+}
+
+// ---=== TOGGLE COMPLETE ===---
+async function toggleComplete(taskId) {
+    const res = await fetch(`http://127.0.0.1:8000/tasks/${taskId}/toggle`, {
+        method: "PUT",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+
+    const data = await res.json(); // { completed: true/false }
+
+    const taskCard = document.getElementById(`task-${taskId}`);
+
+    if (!taskCard) return;
+
+    // ✅ Toggle class without reloading everything
+    if (data.completed) {
+        taskCard.classList.add("completed");
+    } else {
+        taskCard.classList.remove("completed");
+    }
+}
+
 // ---=== TOAST NOTIFICATIONS ===---
 function showToast(message, type = "info") {
     const container = document.getElementById("toast-container");
@@ -377,6 +434,7 @@ function showLoggedIn() {
     document.getElementById("login-section").style.display = "none";
     document.getElementById("app-section").style.display = "block";
     document.getElementById("logout-btn").style.display = "block";
+    document.getElementById("delete-btn").style.display = "block";
     document.getElementById("page-title").innerText += " - " + user_name;
     document.getElementById("page-header").innerText += " - " + user_name;
 }
@@ -385,6 +443,7 @@ function showLoggedOut() {
     document.getElementById("login-section").style.display = "block";
     document.getElementById("app-section").style.display = "none";
     document.getElementById("logout-btn").style.display = "none";
+    document.getElementById("delete-btn").style.display = "none";
     document.getElementById("page-title").innerText = "Clean Tasks";
     document.getElementById("page-header").innerText = "Clean Tasks";
 }

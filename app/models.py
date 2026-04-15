@@ -17,6 +17,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     password = Column(String)
+    tasks = relationship("Task", back_populates="owner", cascade="all, delete")
 
 # ---=== TASK ===---
 class Task(Base):
@@ -31,6 +32,7 @@ class Task(Base):
     description = Column(String)
     owner_id = Column(Integer, ForeignKey("users.id"))
     position = Column(Integer, default=0)
+    completed = Column(Boolean, default=False)
     ai_generated = Column(Boolean, default=False)
     ai_summary = Column(String, nullable=True)
     ai_breakdown = Column(String, nullable=True)

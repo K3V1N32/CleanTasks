@@ -63,6 +63,7 @@ class TaskResponse(BaseModel):
     description: str
     owner_id: int
     position: int
+    completed: bool
     ai_generated: bool
     ai_summary: str | None
     ai_breakdown: str | None
