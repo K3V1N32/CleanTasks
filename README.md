@@ -92,15 +92,17 @@ Create a .env file:
 ```env
 SECRET_KEY=TOKEN SECRET KEY GOES HERE
 DATABASE_URL=URL TO DATABASE GOES HERE
+OLLAMA_URL=URL TO OLLAMA | localhost is put as defualt
+OLLAMA_MODEL=qwen2.5
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRES_MINUTES=30
 ```
 
 ### 5. Spin up ollama-llama3
 1. Goto https://ollama.com/ and install ollama.
-2. Once installed, run the command **ollama run llama3**
+2. Once installed, run the command **ollama run qwen2.5**
 3. After a couple of minutes of download,
-4. llama3 will be up and running, and ready for the backend to connect!
+4. qwen will be up and running, and ready for the backend to connect!
 
 ### 6. Run the backend server
 ```bash

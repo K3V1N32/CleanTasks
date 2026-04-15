@@ -123,6 +123,14 @@ async function register() {
 async function createTask() {
     title_value = document.getElementById("title").value;
     desc_value = document.getElementById("description").value;
+    if (!title_value) {
+        showToast("Title cannot be empty!", "error");
+        return;
+    }
+    if(!desc_value) {
+        showToast("Description cannot be empty!", "error");
+        return;
+    }
     document.getElementById("title").value = "";
     document.getElementById("description").value ="";
     showToast("Creating Task...", "info");
@@ -156,24 +164,48 @@ async function loadTasks() {
     const container = document.getElementById("tasks");
     container.innerHTML = "";
 
-    tasks.forEach(task => {
+    tasks.forEach((task, index) => {
         const div = document.createElement("div");
         div.className = "task-card";
+        div.style.animationDelay = `${index * 0.05}s`;
+        div.dataset.id = task.id;
+
+        const generate_btn = !task.ai_generated ? `
+             <button onclick="generateAI(${task.id})">🤔Generate AI Summary</button>
+        ` : "✔️ AI Generated";
+
+        const aiSection = task.ai_generated ? `
+            <div class="ai-container">
+                <div class="ai-card">
+                    <strong>AI Summary</strong>
+                    <p>${task.ai_summary || "No summary available"}</p>
+                </div>
+
+                <div class="ai-card">
+                    <strong>AI Breakdown</strong>
+                    <ul>
+                        ${(task.ai_breakdown || "").split("|").map(s => `<li>${s}</li>`).join("")}
+                    </ul>
+                </div>
+            </div>
+        ` : "";
 
         div.innerHTML = `
             <div onclick="toggleTask(${task.id})" class="task-header">
+                <span class="drag-handle">≡</span>
+
                 <div class="task-title">${task.title}</div>
                 <button class="toggle-btn" onclick="event.stopPropagation();toggleTask(${task.id});" id="toggle-${task.id}">
                     ⬇
                 </button>
             </div>
 
-            <div id="content-${task.id}" style="display:none;">
+            <div id="content-${task.id}" class="task-content">
                 <div id="view-${task.id}">
                     <div>${task.description}</div>
 
                     <div class="task-actions">
-                        <button onclick="regenerateAI(${task.id})">♻️ Regenerate</button>
+                        ${generate_btn}
                         <button onclick="showEdit(${task.id})">✏️ Edit</button>
 
                         <span id="delete-${task.id}">
@@ -197,25 +229,44 @@ async function loadTasks() {
                     <button onclick="cancelEdit(${task.id})">❌ Cancel</button>
                 </div>
 
-                <div class="ai-container">
-                    <div class="ai-card">
-                        <strong>AI Summary</strong>
-                        <p>${task.ai_summary || "Not generated yet"}</p>
-                    </div>
-
-                    <div class="ai-card">
-                        <strong>AI Breakdown</strong>
-                        <ul>
-                            ${(task.ai_breakdown || "").split("|").map(s => `<li>${s}</li>`).join("")}
-                        </ul>
-                    </div>
-                </div>
+                ${aiSection}
             </div>
         `;
 
         container.appendChild(div);
     });
+    //Uses SortableJS to let the user drag and drop tasks to re-order
+    const sort_container = document.getElementById("tasks");
+
+    new Sortable(sort_container, {
+        animation: 200,
+        easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+        ghostClass: "drag-ghost",
+        chosenClass: "drag-chosen",
+        dragClass: "drag-dragging",
+
+        handle: ".drag-handle",
+
+        onEnd: function (evt) {
+            const taskIds = [...document.querySelectorAll(".task-card")]
+                .map(el => el.dataset.id);
+
+            saveTaskOrder(taskIds);
+        }
+    });
     showToast("Tasks successfully reloaded!", "success")
+}
+
+// ---=== SET TASK ORDER ===---
+async function saveTaskOrder(taskIds) {
+    await fetch("http://127.0.0.1:8000/tasks/reorder", {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(taskIds)
+    });
 }
 
 // ---=== EDIT TASKS ===---
@@ -248,30 +299,19 @@ async function updateTask(id) {
     toggleTask(id)
 }
 
-// ---=== REGENERATE AI ===---
-async function regenerateAI(id) {
-    const btn = event.target;
-    btn.disabled = true;
-    btn.innerText = "⏳ Generating..."
-
+// ---=== GENERATE AI ===---
+async function generateAI(id) {
     showSpinner();
-    try {
-        await fetch(`http://127.0.0.1:8000/tasks/${id}/regenerate-ai`, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        });
 
-        showToast("Successfully regenerated!", "success")
-    } catch (err) {
-        showToast("AI failed", "error")
-    }
-
-    btn.disabled = false;
-    btn.innerText = "♻️ Regenerate"
+    await fetch(`http://127.0.0.1:8000/tasks/${id}/generate-ai`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
 
     hideSpinner();
+    showToast("AI generated", "success");
     await loadTasks();
     toggleTask(id);
 }
@@ -329,8 +369,8 @@ function showLoggedOut() {
     document.getElementById("login-section").style.display = "block";
     document.getElementById("app-section").style.display = "none";
     document.getElementById("logout-btn").style.display = "none";
-    document.getElementById("page-title").innerText = "AI Task Manager";
-    document.getElementById("page-header").innerText = "AI Task Manager";
+    document.getElementById("page-title").innerText = "Clean Tasks";
+    document.getElementById("page-header").innerText = "Clean Tasks";
 }
 
 function showEdit(id) {
@@ -366,12 +406,11 @@ function cancelDelete(id) {
 function toggleTask(id) {
     const content = document.getElementById(`content-${id}`);
     const button = document.getElementById(`toggle-${id}`);
+    const isToggle = content.classList.toggle("open");
 
-    if (content.style.display === "none") {
-        content.style.display = "block";
+    if (isToggle) {
         button.innerText = "⬆";
     } else {
-        content.style.display = "none";
         button.innerText = "⬇";
     }
 }

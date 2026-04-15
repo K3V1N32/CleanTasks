@@ -47,6 +47,16 @@ input {
     border-radius: 10px;
     padding: 15px;
     margin-bottom: 10px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .task-card:hover {
@@ -68,6 +78,7 @@ input {
     display: grid;
     grid-template-columns: auto auto auto;
     padding: 5px;
+    animation: fadeIn 0.4s ease;
 }
 
 .ai-container div {
@@ -207,4 +218,55 @@ input {
 
 #password:focus ~ #password-info {
     display: block;
+}
+
+.drag-ghost {
+    opacity: 0.4;
+    background: #e0e0e0;
+    border: 2px dashed #aaa;
+}
+
+.drag-dragging {
+    opacity: 0.8;
+    transform: rotate(2deg) scale(1.02);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.drag-chosen {
+    background: #00241B;
+}
+
+.task-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+}
+
+.task-content.open {
+    max-height: 500px;
+}
+
+button {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button.hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+button.active {
+    transform: scale(0.95);
+}
+
+.drag-handle {
+    cursor: grab;
+    margin-right: 10px;
+    font-size: 18px;
+    color: #FCFFFC;
+    user-select: none;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
 }

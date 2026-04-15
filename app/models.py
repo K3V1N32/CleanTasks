@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from .database import Base
 """
@@ -30,6 +30,8 @@ class Task(Base):
     title = Column(String)
     description = Column(String)
     owner_id = Column(Integer, ForeignKey("users.id"))
+    position = Column(Integer, default=0)
+    ai_generated = Column(Boolean, default=False)
     ai_summary = Column(String, nullable=True)
     ai_breakdown = Column(String, nullable=True)
 

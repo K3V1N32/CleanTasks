@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import models, schemas, database
 from ..auth import get_current_user
-from ..ai import summarize_task, task_breakdown
+from ..ai import ai_generate
 
 # ---=== Initialize Router ===---
 router = APIRouter()
@@ -19,7 +19,7 @@ def get_db():
         db.close()
 
 # ---=== CREATE TASK ===---
-@router.post("/tasks")
+@router.post("/tasks", response_model=schemas.TaskResponse)
 def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
     POST /tasks
@@ -29,15 +29,18 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db), current
     :param current_user:
     :return: dictionary containing task information
     """
-    summary = summarize_task(task.title, task.description)
-    breakdown = task_breakdown(task.title, task.description)
+    max_position = db.query(func.max(models.Task.position)) \
+        .filter(models.Task.owner_id == current_user.id) \
+        .order_by(models.Task.position.desc()) \
+        .first()
+
+    new_position = (max_position + 1) if max_position is not None else 0
 
     db_task = models.Task(
         title=task.title,
         description=task.description,
         owner_id=current_user.id,
-        ai_summary=summary,
-        ai_breakdown="|".join(breakdown['subtasks'])
+        position=new_position
     )
     db.add(db_task)
     db.commit()
@@ -54,7 +57,35 @@ def get_tasks(db: Session = Depends(get_db), current_user = Depends(get_current_
     :param current_user:
     :return: list containing task objects
     """
-    return db.query(models.Task).filter(models.Task.owner_id == current_user.id).all()
+    return db.query(models.Task)\
+        .filter(models.Task.owner_id == current_user.id)\
+        .order_by(models.Task.position)\
+        .all()
+
+# ---=== REORDER TASKS ===---
+@router.put("/tasks/reorder")
+def reorder_tasks(order: list[int], db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    """
+    POST /tasks/reorder
+    Reorders tasks based on order sent
+    :param order:
+    :param db:
+    :param current_user:
+    :return: Order updated message
+    """
+    tasks = db.query(models.Task) \
+        .filter(models.Task.owner_id == current_user.id) \
+        .all()
+
+    task_map = {task.id: task for task in tasks}
+
+    for index, task_id in enumerate(order):
+        if task_id in task_map:
+            task_map[task_id].position = index
+
+    db.commit()
+
+    return {"message": "Order updated"}
 
 # ---=== UPDATE TASK ===---
 @router.put("/tasks/{task_id}")
@@ -75,18 +106,17 @@ def update_task(task_id: int, task: schemas.TaskCreate, db: Session = Depends(ge
 
     db_task.title = task.title
     db_task.description = task.description
-    db_task.ai_summary = summarize_task(task.title, task.description)
-    db_task.ai_breakdown = "|".join(task_breakdown(task.title, task.description)['subtasks'])
+    db_task.ai_generated = False
 
     db.commit()
     return db_task
 
-# ---=== REGENERATE AI ===---
-@router.post("/tasks/{task_id}/regenerate-ai")
-def regenerate_ai(task_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+# ---=== GENERATE AI INTO DATABASE===---
+@router.post("/tasks/{task_id}/generate-ai")
+def generate_ai(task_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
-    POST /tasks/{task_id}/regenerate-ai
-    Regenerates the AI in a task for the current user
+    POST /tasks/{task_id}/generate-ai
+    Generates the AI in a task for the current user and store it in the database
     :param task_id:
     :param db:
     :param current_user:
@@ -100,8 +130,11 @@ def regenerate_ai(task_id: int, db: Session = Depends(get_db), current_user = De
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    task.ai_summary = summarize_task(task.title, task.description)
-    task.ai_breakdown = "|".join(task_breakdown(task.title, task.description)['subtasks'])
+    ai_response = ai_generate(task.title, task.description)
+
+    task.ai_summary = ai_response["summary"]
+    task.ai_breakdown = "|".join(ai_response["subtasks"])
+    task.ai_generated = True
 
     db.commit()
 
@@ -143,7 +176,8 @@ def summarize_task_endpoint(
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    summary = summarize_task(task.title, task.description)
+    summary_dict = ai_generate(task.title, task.description)
+    summary = summary_dict.get("summary", "")
 
     return {
         "original": {
@@ -165,9 +199,11 @@ def subtask_breakdown(task_id: int, db: Session = Depends(get_db), current_user 
     :return: the original task and the generated subtasks
     """
     task = db.query(models.Task).filter(models.Task.id == task_id, models.Task.owner_id == current_user.id).first()
+    sub_dict = ai_generate(task.title, task.description)
+    breakdown = sub_dict["subtasks"]
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     return {
         "original": { "task": task.title, "description": task.description},
-        "breakdown": task_breakdown(task.title, task.description)
+        "breakdown": breakdown
     }

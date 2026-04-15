@@ -24,6 +24,9 @@ TaskResponse:
         title (str): The title of the task.
         description (str): The task description.
         owner_id (int): ID of the user who owns the task.
+        ai_generated (bool): Whether or not the task AI parts are generated.
+        ai_summary (str): The task AI summary.
+        ai_breakdown (str): The task AI breakdown.
 
 """
 
@@ -59,6 +62,8 @@ class TaskResponse(BaseModel):
     title: str
     description: str
     owner_id: int
+    position: int
+    ai_generated: bool
     ai_summary: str | None
     ai_breakdown: str | None
 
