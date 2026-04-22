@@ -1,6 +1,32 @@
 //Set local storage variables in case page is refreshed while user is still logged in
 let token = localStorage.getItem("token") || "";
 let user_name = localStorage.getItem("user_name") || "";
+const api_route = "/api";
+
+//Declare SVG icons for chevron and drag handle
+const chevron_down = `
+    <span class="icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+        </svg>
+    </span>
+`
+
+const chevron_up = `
+    <span class="icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+        </svg>
+    </span>
+`
+
+const bars_3 = `
+    <span class="icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+    </span>
+`
 
 // ---=== UI REFRESH ===---
 async function updateUI() {
@@ -10,7 +36,7 @@ async function updateUI() {
     }
 
     try {
-        const res = await fetch("http://127.0.0.1:8000/users/me", {
+        const res = await fetch(`${api_route}/users/me`, {
             headers: {
                 "Authorization": `Bearer ${token}`
             }
@@ -47,7 +73,7 @@ async function login() {
     formData.append("password", passwordVal);
 
     try {
-        const res = await fetch("http://127.0.0.1:8000/login", {
+        const res = await fetch(`${api_route}/login`, {
             method: "POST",
             body: formData
         });
@@ -100,7 +126,7 @@ async function register() {
         return;
     }
 
-    const res = await fetch("http://127.0.0.1:8000/users", {
+    const res = await fetch(`${api_route}/users`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -137,7 +163,7 @@ async function createTask() {
     toggleTaskForm();
     showSpinner();
 
-    await fetch("http://127.0.0.1:8000/tasks", {
+    await fetch(`${api_route}/tasks`, {
         method: "POST",
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -156,7 +182,7 @@ async function createTask() {
 
 // ---=== LOAD TASKS ===---
 async function loadTasks() {
-    const res = await fetch("http://127.0.0.1:8000/tasks", {
+    const res = await fetch(`${api_route}/tasks`, {
         headers: { "Authorization": `Bearer ${token}` }
     });
 
@@ -176,8 +202,8 @@ async function loadTasks() {
         }
 
         const generate_btn = !task.ai_generated ? `
-             <button onclick="generateAI(${task.id})">🤔Generate AI Summary</button>
-        ` : "✔️ AI Generated";
+             <button onclick="generateAI(${task.id})">Generate AI Summary</button>
+        ` : "AI Generated";
 
         const aiSection = task.ai_generated ? `
             <div class="ai-container">
@@ -205,7 +231,7 @@ async function loadTasks() {
             <div onclick="toggleTask(${task.id})" class="task-header">
                 <div class="left-group">
                     ${completedCheckbox}
-                    <span class="drag-handle">≡</span>
+                    <span class="drag-handle">${bars_3}</span>
                 </div>
 
                 <div class="center-group">
@@ -213,7 +239,7 @@ async function loadTasks() {
                 </div>
                 <div class="right-group">
                     <button class="toggle-btn" onclick="event.stopPropagation();toggleTask(${task.id});" id="toggle-${task.id}">
-                        ⬇
+                        ${chevron_down}
                     </button>
                 </div>
             </div>
@@ -224,15 +250,15 @@ async function loadTasks() {
 
                     <div class="task-actions">
                         ${generate_btn}
-                        <button onclick="showEdit(${task.id})">✏️ Edit</button>
+                        <button onclick="showEdit(${task.id})">Edit</button>
 
                         <span id="delete-${task.id}">
-                            <button onclick="showDeleteConfirm(${task.id})">🗑 Delete</button>
+                            <button onclick="showDeleteConfirm(${task.id})">Delete</button>
                         </span>
                         <span id="confirm-${task.id}" style="display:none;">
                             <span>Are you sure?</span>
-                            <button onclick="confirmDelete(${task.id})">⚠️ Confirm</button>
-                            <button onclick="cancelDelete(${task.id})">❌ Cancel</button>
+                            <button onclick="confirmDelete(${task.id})">Confirm</button>
+                            <button onclick="cancelDelete(${task.id})">Cancel</button>
                         </span>
                     </div>
                 </div>
@@ -243,8 +269,8 @@ async function loadTasks() {
                     Description:
                     <input id="edit-desc-${task.id}" value="${task.description}">
 
-                    <button onclick="updateTask(${task.id})">💾 Save</button>
-                    <button onclick="cancelEdit(${task.id})">❌ Cancel</button>
+                    <button onclick="updateTask(${task.id})">Save</button>
+                    <button onclick="cancelEdit(${task.id})">Cancel</button>
                 </div>
 
                 ${aiSection}
@@ -293,7 +319,7 @@ async function loadTasks() {
 
 // ---=== SET TASK ORDER ===---
 async function saveTaskOrder(taskIds) {
-    await fetch("http://127.0.0.1:8000/tasks/reorder", {
+    await fetch(`${api_route}/tasks/reorder`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -310,10 +336,10 @@ async function updateTask(id) {
 
     const btn = event.target;
     btn.disabled = true;
-    btn.innerText = "✏️ Editing..."
+    btn.innerText = "Editing..."
     showSpinner();
 
-    await fetch(`http://127.0.0.1:8000/tasks/${id}`, {
+    await fetch(`${api_route}/tasks/${id}`, {
         method: "PUT",
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -328,7 +354,7 @@ async function updateTask(id) {
     hideSpinner();
     showToast("Successfully edited task!", "success")
     btn.disabled = false;
-    btn.innerText = "💾 Save"
+    btn.innerText = "Save"
     await loadTasks(); // refresh UI
     toggleTask(id)
 }
@@ -337,7 +363,7 @@ async function updateTask(id) {
 async function generateAI(id) {
     showSpinner();
 
-    await fetch(`http://127.0.0.1:8000/tasks/${id}/generate-ai`, {
+    await fetch(`${api_route}/tasks/${id}/generate-ai`, {
         method: "POST",
         headers: {
             "Authorization": `Bearer ${token}`
@@ -352,7 +378,7 @@ async function generateAI(id) {
 
 // ---=== DELETE TASK ===---
 async function confirmDelete(id) {
-    await fetch(`http://127.0.0.1:8000/tasks/${id}`, {
+    await fetch(`${api_route}/tasks/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
     });
@@ -365,7 +391,7 @@ async function confirmDelete(id) {
 async function deleteAccount() {
     if (!confirm("Are you sure you want to delete your account? This cannot be undone!")) return;
 
-    await fetch("http://127.0.0.1:8000/users/me", {
+    await fetch(`${api_route}/users/me`, {
         method: "DELETE",
         headers: {
             "Authorization": `Bearer ${token}`
@@ -379,7 +405,7 @@ async function deleteAccount() {
 
 // ---=== TOGGLE COMPLETE ===---
 async function toggleComplete(taskId) {
-    const res = await fetch(`http://127.0.0.1:8000/tasks/${taskId}/toggle`, {
+    const res = await fetch(`${api_route}/tasks/${taskId}/toggle`, {
         method: "PUT",
         headers: {
             "Authorization": `Bearer ${token}`
@@ -392,7 +418,6 @@ async function toggleComplete(taskId) {
 
     if (!taskCard) return;
 
-    // ✅ Toggle class without reloading everything
     if (data.completed) {
         taskCard.classList.add("completed");
     } else {
@@ -484,9 +509,9 @@ function toggleTask(id) {
     const isToggle = content.classList.toggle("open");
 
     if (isToggle) {
-        button.innerText = "⬆";
+        button.innerHTML = chevron_up;
     } else {
-        button.innerText = "⬇";
+        button.innerHTML = chevron_down;
     }
 }
 
@@ -494,7 +519,7 @@ function toggleTaskForm() {
     const form = document.getElementById("task-form");
     form.style.display = form.style.display === "none" ? "block" : "none";
     const btn = document.getElementById("task-form-button")
-    btn.innerText = form.style.display === "none" ? "➕ Create Task  ⬇" : "➕ Create Task  ⬆";
+    btn.innerText = form.style.display === "none" ? "Create Task [ + ]" : "Create Task [ - ]";
 }
 
 //Page load update in case of existing token.

@@ -5,7 +5,7 @@ from .. import models, schemas, database
 from ..auth import hash_password, verify_password, create_access_token, get_current_user
 
 # ---=== Initialize Router ===---
-router = APIRouter()
+router = APIRouter(prefix="/api")
 
 def get_db():
     """

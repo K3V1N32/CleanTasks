@@ -65,6 +65,11 @@ input {
     background: #f44336;
 }
 
+#delete-btn:hover {
+    cursor: pointer;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
 /* Toast Notifications */
 #toast-container {
     position: fixed;
@@ -361,4 +366,11 @@ input[type="checkbox"]:checked::before {
 .task-card.completed .task-title {
     text-decoration: line-through;
     color: #777;
+}
+
+/* Icons */
+.icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
 }

@@ -6,7 +6,7 @@ from ..auth import get_current_user
 from ..ai import ai_generate
 
 # ---=== Initialize Router ===---
-router = APIRouter()
+router = APIRouter(prefix="/api")
 
 def get_db():
     """
