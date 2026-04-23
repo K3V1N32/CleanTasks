@@ -112,6 +112,7 @@ function logout() {
     localStorage.setItem("token", "");
     user_name = "";
     localStorage.setItem("user_name", "");
+    toggleMenu();
     updateUI();
     showToast("Logged out", "success");
 }
@@ -285,12 +286,15 @@ async function loadTasks() {
     let originalOrder = [];
 
     new Sortable(sort_container, {
+        forceFallback: true,
+        fallbackClass: "drag-dragging",
+        fallbackOnBody: true,
+        swapThreshold: 0.65,
         animation: 200,
         easing: "cubic-bezier(0.22, 1, 0.36, 1)",
         ghostClass: "drag-ghost",
         chosenClass: "drag-chosen",
         dragClass: "drag-dragging",
-
         handle: ".drag-handle",
 
         onStart: function () {
@@ -458,8 +462,6 @@ function showToast(message, type = "info") {
 function showLoggedIn() {
     document.getElementById("login-section").style.display = "none";
     document.getElementById("app-section").style.display = "block";
-    document.getElementById("logout-btn").style.display = "block";
-    document.getElementById("delete-btn").style.display = "block";
     document.getElementById("page-title").innerText += " - " + user_name;
     document.getElementById("page-header").innerText += " - " + user_name;
 }
@@ -467,8 +469,6 @@ function showLoggedIn() {
 function showLoggedOut() {
     document.getElementById("login-section").style.display = "block";
     document.getElementById("app-section").style.display = "none";
-    document.getElementById("logout-btn").style.display = "none";
-    document.getElementById("delete-btn").style.display = "none";
     document.getElementById("page-title").innerText = "Clean Tasks";
     document.getElementById("page-header").innerText = "Clean Tasks";
 }
@@ -518,8 +518,13 @@ function toggleTask(id) {
 function toggleTaskForm() {
     const form = document.getElementById("task-form");
     form.style.display = form.style.display === "none" ? "block" : "none";
-    const btn = document.getElementById("task-form-button")
-    btn.innerText = form.style.display === "none" ? "Create Task [ + ]" : "Create Task [ - ]";
+    const button = document.getElementById("fab-add-task");
+    button.classList.toggle("open");
+}
+
+function toggleMenu() {
+    const menu = document.getElementById("side-menu");
+    menu.classList.toggle("open");
 }
 
 //Page load update in case of existing token.

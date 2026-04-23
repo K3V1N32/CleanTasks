@@ -1,58 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
-<div id="overlay" style="display:none;">
-    <div id="ai-spinner">
-        <div class="spinner"></div>
-        <div>AI is thinking...</div>
-    </div>
-</div>
-<div id="toast-container"></div>
-<div id="logout-container">
-    <button onclick="logout();" id="logout-btn">Logout</button>
-</div>
-<div id="delete-container">
-    <button id="delete-btn" onclick="deleteAccount()">Delete Account</button>
-</div>
+<!-- Hello! Welcome to my REST API task manager web app! -->
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="page-title">Clean Tasks</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1 id="page-header">Clean Tasks</h1>
+    <!-- OVERLAY AND AI-SPINNER -->
+    <div id="overlay" style="display:none;">
+        <div id="ai-spinner">
+            <div class="spinner"></div>
+            <div>AI is thinking...</div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div id="toast-container"></div>
+
+    <!-- Hamburger Settings Menu -->
+    <button id="menu-toggle" onclick="toggleMenu()">☰</button>
+
+    <div id="side-menu" class="side-menu">
+        <div class="menu-content">
+            <h3>Settings</h3>
+            <hr>
+            <button onclick="logout()" class="menu-btn logout">Logout</button>
+            <button onclick="deleteAccount()" class="menu-btn delete">Delete Account</button>
+            <button onclick="toggleMenu()" class="menu-btn close">Close</button>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="main-header">
+        <h1 id="page-header">Clean Tasks</h1>
+    </header>
 
     <!-- LOGIN -->
-    <div id="login-section">
-        <h2>Login</h2>
-        <input id="username" placeholder="Username" autocomplete="user-name">
-        <input id="password" type="password" placeholder="Password" autocomplete="password">
-        <button onclick="login()">Login</button>
-        <button onclick="register()">Register</button>
-        </br>
-        <small id="password-info">
-            Password must be at least 8 characters and include:</br>
-            - Uppercase letter</br>
-            - Lowercase letter</br>
-            - Number</br>
-        </small>
-    </div>
-
-    <!-- MAIN APP -->
-    <div id="app-section" style="display:none;">
-
-        <button id="task-form-button" onclick="toggleTaskForm()">Create Task [ + ]</button>
-
-        <!-- TASK FORM -->
-        <div id="task-form" style="display:none;">
-            <input id="title" placeholder="Title">
-            <input id="description" placeholder="Description">
-            <button onclick="createTask()">Create</button>
+    <main class="container">
+        <div id="login-section">
+            <h2>Login</h2>
+            <input id="username" placeholder="Username" autocomplete="user-name">
+            <input id="password" type="password" placeholder="Password" autocomplete="password">
+            <button onclick="login()">Login</button>
+            <button onclick="register()">Register</button>
+            </br>
+            <small id="password-info">
+                Password must be at least 8 characters and include:</br>
+                - Uppercase letter</br>
+                - Lowercase letter</br>
+                - Number</br>
+            </small>
         </div>
 
-        <!-- TASK LIST -->
-        <div id="tasks"></div>
-    </div>
+        <!-- MAIN APP -->
+        <div id="app-section" style="display:none;">
 
+            <button id="fab-add-task" onclick="toggleTaskForm()" aria-label="Add Task"></button>
 
+            <!-- TASK FORM -->
+            <div id="task-form" style="display:none;">
+                <span>New Task:</span>
+                <button class="close-tf-btn" onclick="toggleTaskForm()">X</button>
+                <input id="title" placeholder="Title">
+                <input id="description" placeholder="Description">
+                <button onclick="createTask()">Submit</button>
+            </div>
+
+            <!-- TASK LIST -->
+            <div id="tasks"></div>
+        </div>
+    </main>
+
+    <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="app.js"></script>
 </body>
